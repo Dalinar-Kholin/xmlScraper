@@ -217,6 +217,7 @@ func sanitizeEdd(edd *EDDToTrader) {
 
 func main() {
 	if len(os.Args) < 2 {
+		fmt.Printf("za mało argumentów\n")
 		return
 	}
 	file, err := os.ReadFile(os.Args[1])
