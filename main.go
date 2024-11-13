@@ -102,6 +102,9 @@ type CommercialDescription struct {
 
 func makeHtml(data EDDToTrader) string {
 
+	for _, x := range data.Message.DD801B.Body.EDDContainer.ConsigneeTraders {
+		fmt.Printf("identyfikator:= %v\n", x.ConsigneeTrader.TraderId.PersonalId)
+	}
 	funcMap := template.FuncMap{
 		// funkcja licząca czy po tej iteracji zapisywać drukowanie już na następnej stronie
 		"check": func(i int) bool {
@@ -126,82 +129,11 @@ func makeHtml(data EDDToTrader) string {
 	}
 	file, _ := os.Create(dest)
 	/*templatka naszego HTML*/
-	t, err := template.New("res").Funcs(funcMap).Parse(`<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-    <style>
-        .item { width: 30%; float: left; margin: 1%; }
-        .page-break { clear: both; page-break-after: always; }
-    </style>
-</head>
-<body style="font-size: 85%;">
-	{{$header := .Message.DD801B.Header}}
-	{{$body := .Message.DD801B.Body}}
-    {{range $index, $item := .Message.DD801B.Body.EDDContainer.ConsigneeTraders}}
-        
-	<table border="1" cellpadding="5" cellspacing="0" width="100%">
-    <tr>
-        <td>
-            Dokument e-DD
-        </td>
-    </tr>
-    <tr>
-        <td align="right">
-            <small>Identyfikator komunikatu:</small> {{ $header.MessageIdentifier}}, utworzonego: {{$header.DateOfPreparation}} {{$header.TimeOfPreparation}}<br>
-            <small>Numer LRN przemieszczenia:</small> {{ $body.EDDContainer.EDD.LocalReferenceNumber}}<br>
-            <small>Numer ARC przemieszczenia:</small> {{ $body.EDDContainer.EDD.DeliveryDocumentReference.DeliveryDocumentAdministrativeReferenceCode}}<br>
-            <small>Data i czas pierwszej walidacji projektu e-DD:</small> {{$body.EDDContainer.EDD.DateAndTimeOfValidationOfEDD}}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <table width="100%" cellpadding="5" cellspacing="0"  style="border-collapse: collapse;">
-                <tr>
-                    <td width="50%" valign="top">
-
-                        <strong>Podmiot odbierający</strong><br>
-
-                    </td>
-                    <td width="50%" valign="top" style="border-left: 1px solid black;">
-                        <strong>Podmiot miejsce dostawy</strong><br>
-                    </td>
-                </tr>
-            </table>
-            <table width="100%" cellpadding="5" cellspacing="0"  style="border-collapse: collapse;">
-                <tr>
-                    <td width="50%" valign="top">
-                        {{ $item.ConsigneeTrader.TraderName}}<br>
-                        {{ $item.ConsigneeTrader.StreetName }} {{$item.ConsigneeTrader.StreetNumber}},<br>
-                        {{ $item.ConsigneeTrader.Postcode }} {{ $item.ConsigneeTrader.City }}<br>
-                        Identyfikator podmiotu: {{ (getId $item.ConsigneeTrader.TraderId ) }}
-                    </td>
-                    <td width="50%" valign="top" style="border-left: 1px solid black;">
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Odebrano litrów: ....................<br>
-            Czytelny podpis (imię i nazwisko): ................................................................................
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Oznaczenie jednostek transp. <b>DSW PY11</b>  Kod wyrobu akcyzowego: <b>{{$body.EDDContainer.BodyEDD.ExciseProductCode}}</b> Kod CN: <b>{{$body.EDDContainer.BodyEDD.CnCode}}</b>
-            Ilość: <b>{{$body.EDDContainer.BodyEDD.Quantity}}</b> Masa brutto: <b>{{$body.EDDContainer.BodyEDD.GrossWeight}}</b> Masa netto: <b>{{$body.EDDContainer.BodyEDD.NetWeight}}</b>Opis handlowy [pl]: <b>{{$body.EDDContainer.BodyEDD.CommercialDescription.Value}}</b>
-        </td>
-    </tr>
-</table>
-        {{if (check $index)}}
-            <div class="page-break"></div>
-        {{end}}
-			
-    {{end}}
-</body>
-</html>`) // do jednej templatki nie opłaca się tworzyć osobnego folderu z templatkami
+	htmlTemplate, err := os.ReadFile("./template.gohtml")
+	if err != nil {
+		panic(err)
+	}
+	t, err := template.New("res").Funcs(funcMap).Parse(string(htmlTemplate)) // do jednej templatki nie opłaca się tworzyć osobnego folderu z templatkami
 	if err != nil {
 		panic(err)
 	}
@@ -239,7 +171,7 @@ func main() {
 	if err := xml.Unmarshal(file, &edd); err != nil {
 		panic(err)
 	}
-	sanitizeEdd(&edd)
+	//sanitizeEdd(&edd)
 	res := makeHtml(edd)
 	fmt.Printf("udało się stworzyć dane do wydruku pod %v\n", res)
 }
