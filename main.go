@@ -102,10 +102,25 @@ type CommercialDescription struct {
 
 func makeHtml(data EDDToTrader) string {
 
+	for _, x := range data.Message.DD801B.Body.EDDContainer.ConsigneeTraders {
+		fmt.Printf("identyfikator:= %v\n", x.ConsigneeTrader.TraderId.PersonalId)
+	}
 	funcMap := template.FuncMap{
 		// funkcja licząca czy po tej iteracji zapisywać drukowanie już na następnej stronie
 		"check": func(i int) bool {
 			return (i % 3) == 2
+		},
+		"getId": func(d TraderId) (res string) { // brzydkie w chuj ale cóż zrobię
+			if res = d.TaxNumber; res != "" {
+				return
+			}
+			if res = d.ExciseNumber; res != "" {
+				return
+			}
+			if res = d.PersonalId; res != "" {
+				return
+			}
+			return "dad XML or me stupido"
 		},
 	}
 	dest := os.Args[2]
@@ -162,7 +177,7 @@ func makeHtml(data EDDToTrader) string {
                         {{ $item.ConsigneeTrader.TraderName}}<br>
                         {{ $item.ConsigneeTrader.StreetName }} {{$item.ConsigneeTrader.StreetNumber}},<br>
                         {{ $item.ConsigneeTrader.Postcode }} {{ $item.ConsigneeTrader.City }}<br>
-                        Identyfikator podmiotu: {{ $item.ConsigneeTrader.TraderId.ExciseNumber }}
+                        Identyfikator podmiotu: {{ (getId $item.ConsigneeTrader.TraderId ) }}
                     </td>
                     <td width="50%" valign="top" style="border-left: 1px solid black;">
                     </td>
@@ -217,7 +232,6 @@ func sanitizeEdd(edd *EDDToTrader) {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Printf("za mało argumentów\n")
 		return
 	}
 	file, err := os.ReadFile(os.Args[1])
