@@ -102,9 +102,6 @@ type CommercialDescription struct {
 
 func makeHtml(data EDDToTrader) string {
 
-	for _, x := range data.Message.DD801B.Body.EDDContainer.ConsigneeTraders {
-		fmt.Printf("identyfikator:= %v\n", x.ConsigneeTrader.TraderId.PersonalId)
-	}
 	funcMap := template.FuncMap{
 		// funkcja licząca czy po tej iteracji zapisywać drukowanie już na następnej stronie
 		"check": func(i int) bool {
