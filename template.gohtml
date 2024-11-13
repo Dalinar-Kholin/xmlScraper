@@ -53,7 +53,7 @@
                         {{ $item.DeliveryPlaceTrader.TraderName}}<br>
                         {{ $item.DeliveryPlaceTrader.StreetName }} {{$item.DeliveryPlaceTrader.StreetNumber}},<br>
                         {{ $item.DeliveryPlaceTrader.Postcode }} {{ $item.DeliveryPlaceTrader.City }}<br>
-                        Identyfikator podmiotu: {{ (getId $item.ConsigneeTrader.TraderId ) }}
+                        Identyfikator podmiotu: {{ (getId $item.DeliveryPlaceTrader.TraderId ) }}
                         {{ else }}
                         {{ end }}
                     </td>
